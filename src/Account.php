@@ -3,40 +3,37 @@
 namespace AcmeBank;
 
 use AcmeBank\Exception\InsufficientFundsException;
+use AcmeBank\Deposit;
+use AcmeBank\Withdrawal;
 
 /**
  * @author Michael Phillips <michael.phillips@realpage.com>
  */
 class Account
 {
-    protected $balance = 0.0;
+    protected $ledger;
+
+    public function __construct()
+    {
+        $this->ledger = new Ledger();
+    }
 
     public function deposit(float $amount)
     {
-        if ($amount <= 0) {
-            throw new \InvalidArgumentException('Cannot deposit amount less than or equal to zero.');
-        }
-
-        $this->balance += $amount;
+        $this->ledger->addTransaction(new Deposit($amount));
     }
 
     public function withdraw(float $amount)
     {
-        if ($amount <= 0) {
-            throw new \InvalidArgumentException('Cannot withdraw amount less than or equal to zero.');
-        }
-
-        if ($this->balance < $amount) {
+        if ($this->getBalance() < $amount) {
             throw new InsufficientFundsException('Cannot withdraw more money than you own!');
         }
 
-        $this->balance -= $amount;
-
-        return $amount;
+        $this->ledger->addTransaction(new Withdrawal($amount));
     }
 
     public function getBalance() : float
     {
-        return $this->balance;
+        return $this->ledger->getBalance();
     }
 }
